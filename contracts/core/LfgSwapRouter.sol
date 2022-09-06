@@ -11,16 +11,11 @@ import '../interface/ILfgSwapFactory.sol';
 import '../interface/IWETH.sol';
 import '../interface/IERC20LfgSwap.sol';
 
-
-import '../interface/ISwapMining.sol';
-
-
 contract LfgSwapRouter is ILfgSwapRouter, Ownable {
     using SafeMath for uint;
 
     address public override factory;
     address public override WETH;
-    address public swapMining;
     // address public immutable override WETH;
 
     modifier ensure(uint deadline) {
@@ -32,10 +27,6 @@ contract LfgSwapRouter is ILfgSwapRouter, Ownable {
     constructor(address _factory, address _WETH) public {
         factory = _factory;
         WETH = _WETH;
-    }
-
-    function setSwapMining(address _swapMininng) public onlyOwner {
-        swapMining = _swapMininng;
     }
 
     receive() external payable {
@@ -230,12 +221,6 @@ contract LfgSwapRouter is ILfgSwapRouter, Ownable {
             (uint amount0Out, uint amount1Out) = input == token0 ? (uint(0), amountOut) : (amountOut, uint(0));
             address to = i < path.length - 2 ? LfgSwapLibrary.pairFor(factory, output, path[i + 2]) : _to;
 
-            //swap
-            if (swapMining != address(0) && msg.sender == tx.origin ) {
-                // ISwapMining(swapMining).swap(msg.sender, tokenIn, tokenOut, amountIn, amountOut);
-                ISwapMining(swapMining).swap(msg.sender, input, output, amounts[i],  amountOut);
-            }
-
             ILfgSwapPair(LfgSwapLibrary.pairFor(factory, input, output)).swap(
                 amount0Out, amount1Out, to, new bytes(0)
             );
@@ -355,10 +340,7 @@ contract LfgSwapRouter is ILfgSwapRouter, Ownable {
             amountInput = IERC20LfgSwap(input).balanceOf(address(pair)).sub(reserveInput);
             amountOutput = LfgSwapLibrary.getAmountOut(amountInput, reserveInput, reserveOutput);
             }
-            if (swapMining != address(0)  && msg.sender == tx.origin) {
-                // ISwapMining(swapMining).swap(msg.sender, tokenIn, tokenOut, amountIn, amountOut);
-                ISwapMining(swapMining).swap(msg.sender, input, output, amountInput,  amountOutput);
-            }
+
             (uint amount0Out, uint amount1Out) = input == token0 ? (uint(0), amountOutput) : (amountOutput, uint(0));
             address to = i < path.length - 2 ? LfgSwapLibrary.pairFor(factory, output, path[i + 2]) : _to;
             pair.swap(amount0Out, amount1Out, to, new bytes(0));

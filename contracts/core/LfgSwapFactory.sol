@@ -6,7 +6,6 @@ import './LfgSwapPair.sol';
 contract LfgSwapFactory is ILfgSwapFactory {
     address public override feeTo;
     address public override feeToSetter;
-    address public override migrator;
     bytes32 public initCodeHash;
 
     mapping(address => mapping(address => address)) public override getPair;
@@ -72,10 +71,6 @@ contract LfgSwapFactory is ILfgSwapFactory {
         feeTo = _feeTo;
     }
 
-    function setMigrator(address _migrator) external override {
-        require(msg.sender == feeToSetter, 'LfgSwap: FORBIDDEN');
-        migrator = _migrator;
-    }
 
     function setFeeToSetter(address _feeToSetter) external override {
         require(msg.sender == feeToSetter, 'LfgSwap: FORBIDDEN');
